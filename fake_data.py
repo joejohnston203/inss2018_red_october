@@ -87,7 +87,7 @@ class FakeDataGenerator:
             x = np.random.uniform()
             if x<cr_curr/cr_max:
                 times.append(t)
-        return times
+        return np.array(times)
 
 if __name__=="__main__":
     background = 0. # Counts per hour
