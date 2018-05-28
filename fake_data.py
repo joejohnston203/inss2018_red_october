@@ -5,6 +5,8 @@ passing a neutrino detector
 
 import numpy as np
 
+import seaborn as sns
+
 import scipy.integrate as spint
 
 import matplotlib.pyplot as plt
@@ -87,6 +89,18 @@ class FakeDataGenerator:
             x = np.random.uniform()
             if x<cr_curr/cr_max:
                 times.append(t)
+
+        timeArr = np.linspace(ti, tf, 500)
+        expRate = self.count_rate(timeArr)/exp_counts
+        plt.figure(figsize=(10,8))
+        sns.distplot(times, norm_hist=False, label='Generated Data')
+        plt.plot(timeArr, expRate, label='Expected Rate')
+        plt.xlabel('Time (hr)', fontsize=10)
+        plt.ylabel('Count Rate (counts/hr)', fontsize=10)
+        plt.legend()
+        plt.ylim([0,np.max(expRate)*1.2])
+        plt.show()
+
         return np.array(times)
 
 if __name__=="__main__":
