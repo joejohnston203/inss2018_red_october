@@ -117,7 +117,7 @@ if __name__=="__main__":
     signal_dist_0 = 1050. # m
     reactor_power_0 = 6800. # MW
     t0 = 12. # h
-    d0 = 7000. # m, maximum distance in Strait of Gibraltar
+    d0 = 1341. # m, worst case effective radius for a string of detectors across the Strait of Gibraltar
     v0 = 83340 # 45 knots = 83.34 m/h
     p0 = 150. # MW
     
