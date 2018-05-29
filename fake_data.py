@@ -5,7 +5,13 @@ passing a neutrino detector
 
 import numpy as np
 
-import seaborn as sns
+try:
+    import seaborn as sns
+    seaborn_imported = True
+except ImportError as e:
+    print("ImportError: %s"%e)
+    print("Continuing wihtout seaborn")
+    seaborn_imported = False
 
 import scipy.integrate as spint
 
@@ -90,28 +96,28 @@ class FakeDataGenerator:
             if x<cr_curr/cr_max:
                 times.append(t)
 
-        timeArr = np.linspace(ti, tf, 500)
-        expRate = self.count_rate(timeArr)/exp_counts
-        plt.figure(figsize=(10,8))
-        sns.distplot(times, norm_hist=False, label='Generated Data')
-        plt.plot(timeArr, expRate, label='Expected Rate')
-        plt.xlabel('Time (hr)', fontsize=10)
-        plt.ylabel('Count Rate (counts/hr)', fontsize=10)
-        plt.legend()
-        plt.ylim([0,np.max(expRate)*1.2])
-        plt.show()
+        if seaborn_imported:
+            timeArr = np.linspace(ti, tf, 500)
+            expRate = self.count_rate(timeArr)/exp_counts
+            plt.figure(figsize=(10,8))
+            sns.distplot(times, norm_hist=False, label='Generated Data')
+            plt.plot(timeArr, expRate, label='Expected Rate')
+            plt.xlabel('Time (hr)', fontsize=10)
+            plt.ylabel('Count Rate (counts/hr)', fontsize=10)
+            plt.legend()
+            plt.ylim([0,np.max(expRate)*1.2])
+            plt.show()
 
         return np.array(times)
 
 if __name__=="__main__":
-    background = 0. # Counts per hour
-    # Use Double Chooz Far Detector as approximation
-    #signal_0 = 1000./24.# counts per hour
-    signal_0 = 1000000.# counts per hour, note that this is a huge signal rate for testing purposes
-    signal_dist_0 = 1000. # m
-    reactor_power_0 = 8500. # MW
-    t0 = 1. # h
-    d0 = 1000. # m
+    background = 0. # Counts per hour, assume we can make a 0 background experiment
+    # Use Double Chooz Far Detector as a reference
+    signal_0 = 10000.*66./24. # counts per hour, assuming we can build 10,000 copies of DC
+    signal_dist_0 = 1050. # m
+    reactor_power_0 = 6800. # MW
+    t0 = 12. # h
+    d0 = 7000. # m, maximum distance in Strait of Gibraltar
     v0 = 83340 # 45 knots = 83.34 m/h
     p0 = 150. # MW
     
@@ -119,7 +125,7 @@ if __name__=="__main__":
                                  signal_0, signal_dist_0,
                                  reactor_power_0,
                                  t0, d0, v0, p0)
-    data = test_gen.generate(0., 2.)
+    data = test_gen.generate(11., 13.)
     #print("data: %s"%data)
 
     fig = plt.figure()
