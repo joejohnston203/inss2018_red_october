@@ -19,7 +19,7 @@ class AnalyzeAntiNueCounts:
         t (array): times of neutrino detection
     """
 
-    def __init__(self, t, detVolFactor, tMax=24.):
+    def __init__(self, t, background, signal, tMax=24.):
         """
         Initialize global variables of ship passing model
     
@@ -32,7 +32,8 @@ class AnalyzeAntiNueCounts:
         # Set global variables
         self.ndim = 2
         self.t = t
-        self.detVolFactor = detVolFactor
+        self.background = background
+        self.signal = signal
         self.tMax = tMax
         
         # Create an array of ndim Priors
@@ -76,10 +77,7 @@ class AnalyzeAntiNueCounts:
             log of prior of all parameters
         """
         priors_eval = [ self.priors[i](params[i]) for i in range(self.ndim) ]
-        if priors_eval[0] == -np.inf:
-            print('Prior 0: ', params[0])
-        if priors_eval[1] == -np.inf:
-            print('Prior 1: ', params[1])
+        
         return np.sum(priors_eval)    
 
     
@@ -109,12 +107,12 @@ class AnalyzeAntiNueCounts:
         """
 
         x_model = np.linspace(0, self.tMax, 500)
-        y_model = np.array([self.rate(params, t) for t in x_model])
+        y_model = np.array([self.rate(t, params) for t in x_model])
 
         return x_model, y_model
 
     
-    def rate(self, params, t):
+    def rate(self, t, params):
         """
         Evaluate the expected event rate at a time t
 
@@ -126,14 +124,10 @@ class AnalyzeAntiNueCounts:
         # Time and distance of closest approach of submarine to detector
         t0, d0 = params
 
-        # Base rate of model detector (events/hr)
-        baseRate = 66.0/24
         # Base distance of model detector to reactor (m)
         baseDistance = 1050
         # Base power of reactor (MW)
         basePower = 6800
-        # Expected background rate (events/hr)
-        expBackground = 7.1/24
     
         # Submarine velocity (m/hr)
         subVelocity = 83340
@@ -141,7 +135,7 @@ class AnalyzeAntiNueCounts:
         subPower = 150
 
         subDist = 1/(d0**2 + subVelocity**2*(t-t0)**2)
-        expRate = self.detVolFactor * (expBackground + (baseRate*subPower/basePower*baseDistance**2) * subDist)
+        expRate = self.background + (self.signal*subPower/basePower*baseDistance**2) * subDist
 
         return expRate
 
@@ -159,17 +153,15 @@ class AnalyzeAntiNueCounts:
         Returns:
             log likelihood  
         """
-        # Get model prediction for event detection rate as a function of time
-        x_model, y_model = self.__call__(params)
-        NexpTot = (int)(integrate.trapz(y_model, x_model))
-        L = poisson.pmf(len(self.t), NexpTot)
-        print(NexpTot, params)
-        for i in range(len(self.t)):
-            L = L * self.rate(params, self.t[i])
-            #if (self.rate(params, self.t[i]) == 0):
-            #    print('rate factor ', i, ' is zero')
 
-        return np.log(L)
+        def rate(x):
+            return self.rate(x, params)
+
+        NexpTot = int(integrate.quad(rate, 0, self.tMax)[0])
+        logL = np.log(poisson.pmf(len(self.t), NexpTot))
+        for i in range(len(self.t)):
+            logL += np.log(rate(self.t[i]))
+        return logL
 
 
 
@@ -193,7 +185,7 @@ class AnalyzeAntiNueCounts:
         
         # Set walker starting locations randomly around initial guess
         starting_positions = [
-            np.array(param_guess) + 1e-4 * np.random.randn(self.ndim) for i in range(nwalkers)
+            np.array(param_guess) + 1e-2 * np.random.randn(self.ndim) for i in range(nwalkers)
         ]
 
         # Set up the sampler object
@@ -207,8 +199,6 @@ class AnalyzeAntiNueCounts:
                 print('Progress: ')
                 
             print("\r[{0}{1}]".format('#' * n, ' ' * (width - n)), end='')
-
-        #print(os.linesep)
 
         # return the samples for later output
         self.samples = sampler.flatchain
@@ -264,11 +254,11 @@ class AnalyzeAntiNueCounts:
         
         # Plot the best-fit line, and data
         plt.figure(figsize=(14,8))
-        sns.distplot(self.t, hist=False, label='Data KDE')
+        #sns.distplot(self.t, hist=False, label='Data KDE')
         plt.plot(x_model, y_model, label='Modle Best Fit')
-        plt.xlabel('Time (hours)')
-        plt.ylabel('Neutrino Detections')
-        plt.xlim([0, tMax])
+        plt.xlabel('Time (hours)', fontsize=12)
+        plt.ylabel('Model Prediction', fontsize=12)
+        plt.xlim([0, self.tMax])
         plt.title('Model Fit to Data');
         plt.legend()
         plt.show()

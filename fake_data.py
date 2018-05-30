@@ -114,7 +114,7 @@ class FakeDataGenerator:
         plt.figure(figsize=(10,8))
         plt.plot(timeArr, [kde(t)*norm for t in timeArr], label='Generated Data KDE')
         plt.hist(times, histBins, label='Generated Data Histogram')
-        plt.plot(timeArr, expRate, label='Expected Rate')
+        plt.plot(timeArr, expRate, alpha = 0.5, linewidth=3, label='Expected Rate')
         plt.legend()
         plt.xlim([ti, tf])
         plt.xlabel('Time (Hours)')
