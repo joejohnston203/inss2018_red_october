@@ -157,10 +157,10 @@ class AnalyzeAntiNueCounts:
         def rate(x):
             return self.rate(x, params)
 
-        NexpTot = int(integrate.quad(rate, 0, self.tMax)[0])
+        NexpTot = integrate.quad(rate, 0, self.tMax)[0]
         logL = np.log(poisson.pmf(len(self.t), NexpTot))
         for i in range(len(self.t)):
-            logL += np.log(rate(self.t[i]))
+            logL += np.log(rate(self.t[i])/NexpTot)
         return logL
 
 
