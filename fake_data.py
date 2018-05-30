@@ -95,18 +95,31 @@ class FakeDataGenerator:
             x = np.random.uniform()
             if x<cr_curr/cr_max:
                 times.append(t)
+        
+        def get_gaus_kernel(mus, sig):
+            def gaus(x):
+                kernels = [1/sig/np.sqrt(np.pi*2) * np.exp(-(x-mu)**2 / sig**2 / 2) for mu in mus]
+                return np.sum(np.array(kernels))
+            return gaus
+        
+        # Set width of individual gaussian kernels and create kde
+        kde_width = 1/240
+        kde = get_gaus_kernel(times, kde_width)
 
-        if seaborn_imported:
-            timeArr = np.linspace(ti, tf, 500)
-            expRate = self.count_rate(timeArr)/exp_counts
-            plt.figure(figsize=(10,8))
-            sns.distplot(times, norm_hist=False, label='Generated Data')
-            plt.plot(timeArr, expRate, label='Expected Rate')
-            plt.xlabel('Time (hr)', fontsize=10)
-            plt.ylabel('Count Rate (counts/hr)', fontsize=10)
-            plt.legend()
-            plt.ylim([0,np.max(expRate)*1.2])
-            plt.show()
+        # Fix binning and plot data (hist+kde) and expected rate
+        histBins = 20
+        norm = (tf-ti)/histBins
+        timeArr = np.linspace(ti, tf, 500)
+        expRate = self.count_rate(timeArr) * norm
+        plt.figure(figsize=(10,8))
+        plt.plot(timeArr, [kde(t)*norm for t in timeArr], label='Generated Data KDE')
+        plt.hist(times, histBins, label='Generated Data Histogram')
+        plt.plot(timeArr, expRate, label='Expected Rate')
+        plt.legend()
+        plt.xlim([ti, tf])
+        plt.xlabel('Time (Hours)')
+        plt.ylabel('Events per %.2f Hours'%norm)
+        plt.show()
 
         return np.array(times)
 
