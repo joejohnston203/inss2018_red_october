@@ -245,6 +245,10 @@ class AnalyzeAntiNueCounts:
         for i in range(self.ndim):
             print("Param {:.0f} = {:.6f} + {:.6f} - {:.6f}".format( i, 
             q['p'+str(i)][0.50], q['p'+str(i)][0.84] - q['p'+str(i)][0.50], q['p'+str(i)][0.50] - q['p'+str(i)][0.16]))
+        
+        # Properly formatted
+        print("t_0: {:.1f}^{{+{:.1f}}}_{{-{:.1f}}}\, \\text{{min}}\\\\".format(q['p0'][0.50]*60, (q['p0'][0.84]-q['p0'][0.50])*60, (q['p0'][0.50]-q['p0'][0.16])*60))
+        print("d_0: {:.1f}^{{+{:.1f}}}_{{-{:.1f}}}\,\\text{{m}}".format(q['p1'][0.50], q['p1'][0.84]-q['p1'][0.50], q['p1'][0.50]-q['p1'][0.16]))
 
         # Best-fit params
         self.bestfit_params = [ q['p'+str(i)][0.50] for i in range(self.ndim) ]
