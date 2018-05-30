@@ -111,9 +111,11 @@ class FakeDataGenerator:
         return np.array(times)
 
 if __name__=="__main__":
-    background = 0. # Counts per hour, assume we can make a 0 background experiment
+    n_detectors = 10000. # 1000 detectors can be built for the cost of one nuclear sub
+    #background = 0. # Counts per hour, assume we can make a 0 background experiment
+    background = n_detectors*0.065/24. # Counts per hour, assuming KamLAND backgrounds
     # Use Double Chooz Far Detector as a reference
-    signal_0 = 10000.*66./24. # counts per hour, assuming we can build 10,000 copies of DC
+    signal_0 = n_detectors*66./24. # counts per hour, assuming we can build 10,000 copies of DC
     signal_dist_0 = 1050. # m
     reactor_power_0 = 6800. # MW
     t0 = 12. # h
@@ -125,7 +127,7 @@ if __name__=="__main__":
                                  signal_0, signal_dist_0,
                                  reactor_power_0,
                                  t0, d0, v0, p0)
-    data = test_gen.generate(11., 13.)
+    data = test_gen.generate()
     #print("data: %s"%data)
 
     fig = plt.figure()
