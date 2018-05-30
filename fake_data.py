@@ -113,12 +113,12 @@ class FakeDataGenerator:
         expRate = self.count_rate(timeArr) * norm
         plt.figure(figsize=(10,8))
         plt.plot(timeArr, [kde(t)*norm for t in timeArr], label='Generated Data KDE')
-        plt.hist(times, histBins, label='Generated Data Histogram')
-        plt.plot(timeArr, expRate, alpha = 0.5, linewidth=3, label='Expected Rate')
-        plt.legend()
+        plt.hist(times, histBins, (ti, tf), label='Generated Data Histogram')
+        plt.plot(timeArr, expRate, alpha = 0.8, linewidth=3, label='Expected Rate')
+        plt.legend(prop={'size':14})
         plt.xlim([ti, tf])
-        plt.xlabel('Time (Hours)')
-        plt.ylabel('Events per %.2f Hours'%norm)
+        plt.xlabel('Time (Hours)', fontsize=15)
+        plt.ylabel('Events per %.2f Hours'%norm, fontsize=15)
         plt.show()
 
         return np.array(times)
